@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "logicReadIn.c"
 
 void printInstructions() {
    printf("Instructions:\n1. Enter your input variables\n  - Variable names can not begin or end with parenthesis");

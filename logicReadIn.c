@@ -5,33 +5,27 @@
   
   Code is not yet tested, there are a few spots where I am pretty certain there are errors.*/
 
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <regex.h>
 #include <string.h>
 #include <stdbool.h>
-#define OPCOUNT 3
+#include "logicReadIn.h"
+#define OPCOUNT 4
 
 enum operator {
     NONE = -1,
     OR,
     AND,
-    NOT
+    NOT,
+    SUBTREE
 };
-
-typedef struct treeNode {
-    enum operator nodeType;
-    char* contents;
-    treeNode* leftChild;
-    treeNode* rightChild;
-} treeNode;
 
 void setBlankNode(treeNode* inputNode) {
     inputNode->nodeType = NONE;
     inputNode->leftChild = NULL;
     inputNode->rightChild = NULL;
+    inputNode->subtreeChild = NULL;
 }
 
 treeNode* treeMake(char* inputString) {
@@ -43,34 +37,50 @@ void processString(treeNode* inputNode) {
     char* opPtr;
     int beginOp = 0;
     int endOp = 0;
-    char* operators[OPCOUNT] = {" OR ", " AND ", "NOT "}; 
+    char* operators[OPCOUNT] = {"(", " OR ", " AND ", "NOT "}; 
     int i = 0;
     
     for(i = 0; i < OPCOUNT; ++i) {
         opPtr = strstr(inputNode->contents, operators[i]);
-        beginOp = strlen(inputNode->contents)-strlen(opPtr);
-        endOp = beginOp + strlen(operators[i]);
+        
+        if(opPtr != NULL) {
+            beginOp = strlen(inputNode->contents)-strlen(opPtr);
+            endOp = beginOp + strlen(operators[i]);
 
-        if((i == OR || i == AND) && !strlen(opPtr)) {
-            inputNode->nodeType = i;
+            if(i == SUBTREE) {
+                inputNode->nodeType = i;
+                //To Be Developed.
+                //Parentheses split functions into 3 separate parts, A(B)C, which is why there is now a subtree ptr in the treeNode struct
+                //Steps:
+                //Create stack of open and close parentheses
+                //Takes first opened set of parentheses, puts all text inside into subtree ptr
+                //Puts text to the left and right into left and right ptrs
+                //Processes all 3 strings
+                break;
+            } else if((i == OR || i == AND) && !strlen(opPtr)) {
+                inputNode->nodeType = i;
 
-            inputNode->leftChild = (treeNode*)malloc(sizeof(treeNode*));
-            strncpy(inputNode->leftChild->contents, inputNode->contents, beginOp);
-            setBlankNode(inputNode->leftChild);
-            processString(inputNode->leftChild);
+                inputNode->leftChild = (treeNode*)malloc(sizeof(treeNode*));
+                strncpy(inputNode->leftChild->contents, inputNode->contents, beginOp);
+                setBlankNode(inputNode->leftChild);
+                processString(inputNode->leftChild);
 
-            inputNode->rightChild = (treeNode*)malloc(sizeof(treeNode*));
-            strncpy(inputNode->rightChild->contents, opPtr, strlen(inputNode->contents)-endOp);
-            setBlankNode(inputNode->rightChild);
-            processString(inputNode->rightChild);
+                inputNode->rightChild = (treeNode*)malloc(sizeof(treeNode*));
+                strncpy(inputNode->rightChild->contents, opPtr, strlen(inputNode->contents)-endOp);
+                setBlankNode(inputNode->rightChild);
+                processString(inputNode->rightChild);
 
-        } else if(i == NOT) {
-            inputNode->nodeType = i;
+                break;
+            } else if(i == NOT) {
+                inputNode->nodeType = i;
 
-            inputNode->rightChild = (treeNode*)malloc(sizeof(treeNode*));
-            strncpy(inputNode->rightChild->contents, inputNode->contents, beginOp);
-            processString(inputNode->rightChild);
-            setBlankNode(inputNode->rightChild);
+                inputNode->rightChild = (treeNode*)malloc(sizeof(treeNode*));
+                strncpy(inputNode->rightChild->contents, inputNode->contents, beginOp);
+                processString(inputNode->rightChild);
+                setBlankNode(inputNode->rightChild);
+
+                break;
+            }
         }
     }
 }
