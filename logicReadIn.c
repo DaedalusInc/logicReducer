@@ -34,6 +34,9 @@ treeNode* treeMake(char* inputString) {
 }
 
 void processString(treeNode* inputNode) {
+    regex_t reegex;
+    regcomp(&reegex, "/\([^()]+\)/g", 0);
+    regmatch_t* matchList;
     char* opPtr;
     int beginOp = 0;
     int endOp = 0;
@@ -49,13 +52,21 @@ void processString(treeNode* inputNode) {
 
             if(i == SUBTREE) {
                 inputNode->nodeType = i;
-                //To Be Developed.
-                //Parentheses split functions into 3 separate parts, A(B)C, which is why there is now a subtree ptr in the treeNode struct
-                //Steps:
-                //Create stack of open and close parentheses
-                //Takes first opened set of parentheses, puts all text inside into subtree ptr
-                //Puts text to the left and right into left and right ptrs
-                //Processes all 3 strings
+                if(!regexec(&reegex, inputNode->contents, 1, matchList, 0)) {
+                    inputNode->subtreeChild = (treeNode*)malloc(sizeof(treeNode*));
+                    strncpy(inputNode->subtreeChild->contents, (inputNode->contents)+matchList->rm_so+1, matchList->rm_eo-1);
+                    processString(inputNode->subtreeChild);
+                    if(matchList->rm_so != 0) {
+                        inputNode->leftChild = (treeNode*)malloc(sizeof(treeNode*));
+                        strncpy(inputNode->leftChild->contents, inputNode->contents, matchList->rm_so-1);
+                        processString(inputNode->leftChild);
+                    }
+                    if(matchList->rm_so != strlen(inputNode->contents)) {
+                        inputNode->rightChild = (treeNode*)malloc(sizeof(treeNode*));
+                        strncpy(inputNode->rightChild->contents, (inputNode->contents)+matchList->rm_eo, matchList->rm_eo);
+                        processString(inputNode->rightChild);
+                    }
+                }
                 break;
             } else if((i == OR || i == AND) && !strlen(opPtr)) {
                 inputNode->nodeType = i;
