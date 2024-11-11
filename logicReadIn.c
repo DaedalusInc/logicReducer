@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define OPCOUNT 4
+#define OPCOUNT 7
 
 void processString(treeNode *inputNode);
 
@@ -42,7 +42,7 @@ void processString(treeNode *inputNode) {
     char *opPtr;
     int beginOp = 0;
     int endOp = 0;
-    char *operators[OPCOUNT] = {"(", " OR ", " AND ", "NOT "};
+    char *operators[OPCOUNT] = {"(", " NAND ", " NOR ", " XOR ", " OR ", " AND ", "NOT "};
     int i = 0;
 
     printf("Starting process of '%s'\n", inputNode->contents);
@@ -83,7 +83,7 @@ void processString(treeNode *inputNode) {
                     }
                 }
                 break;
-            } else if ((i == OR || i == AND)) {
+            } else if ((i == OR || i == AND || i == NAND || i == NOR || i == XOR)) {
                 inputNode->nodeType = i;
 
                 inputNode->leftChild = (treeNode *)malloc(sizeof(treeNode));

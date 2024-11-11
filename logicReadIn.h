@@ -1,4 +1,12 @@
-enum operator{ NONE = -1, SUBTREE, OR, AND, NOT };
+enum operator{
+    NONE = -1,
+    SUBTREE,
+    NAND,
+    NOR,
+    XOR,
+    OR,
+    AND,
+    NOT};
 
 typedef struct treeNode {
     enum operator nodeType;
