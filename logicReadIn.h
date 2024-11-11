@@ -1,4 +1,4 @@
-enum operator{ NONE = -1, OR, AND, NOT, SUBTREE };
+enum operator{ NONE = -1, SUBTREE, OR, AND, NOT };
 
 typedef struct treeNode {
     enum operator nodeType;
@@ -9,3 +9,4 @@ typedef struct treeNode {
 } treeNode;
 
 treeNode *treeMake(char *);
+void printTree(treeNode *);
