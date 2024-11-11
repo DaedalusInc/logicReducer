@@ -87,7 +87,7 @@ int main() {
    fgets(equation, 512, stdin);
    equation[strlen(equation) - 1] = 0;
    treeNode *n = treeMake(equation);
-   printTree(n);
+   printTree(n, 'k');
    for (int inputIndex = 0; inputIndex < numIns; inputIndex++) {
       free(inputNames[inputIndex]);
    }

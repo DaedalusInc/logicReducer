@@ -60,12 +60,14 @@ void processString(treeNode *inputNode) {
                 if (!regexec(&reegex, inputNode->contents, 1, &matchList, 0)) {
                     printf("Regex matched\n");
                     inputNode->subtreeChild = (treeNode *)malloc(sizeof(treeNode));
+                    inputNode->subtreeChild->parent = inputNode;
                     inputNode->subtreeChild->contents = (char *)malloc(matchList.rm_eo - matchList.rm_so);
                     strncpy(inputNode->subtreeChild->contents, &inputNode->contents[matchList.rm_so + 1], matchList.rm_eo - matchList.rm_so - 2);
                     setBlankNode(inputNode->subtreeChild);
                     processString(inputNode->subtreeChild);
                     if (matchList.rm_so != 0) {
                         inputNode->leftChild = (treeNode *)malloc(sizeof(treeNode));
+                        inputNode->leftChild->parent = inputNode;
                         inputNode->leftChild->contents = (char *)malloc(matchList.rm_so + 1);
                         memset(inputNode->leftChild->contents, 0, matchList.rm_so + 1);
                         strncpy(inputNode->leftChild->contents, inputNode->contents, matchList.rm_so);
@@ -74,6 +76,7 @@ void processString(treeNode *inputNode) {
                     }
                     if (matchList.rm_so != strlen(inputNode->contents)) {
                         inputNode->rightChild = (treeNode *)malloc(sizeof(treeNode));
+                        inputNode->rightChild->parent = inputNode;
                         size_t len = strlen(inputNode->contents) - matchList.rm_eo;
                         inputNode->rightChild->contents = (char *)malloc(len + 1);
                         memset(inputNode->rightChild->contents, 0, len + 1);
@@ -86,29 +89,75 @@ void processString(treeNode *inputNode) {
             } else if ((i == OR || i == AND || i == NAND || i == NOR || i == XOR)) {
                 inputNode->nodeType = i;
 
-                inputNode->leftChild = (treeNode *)malloc(sizeof(treeNode));
-                inputNode->leftChild->contents = (char *)malloc(beginOp + 1);
-                memset(inputNode->leftChild->contents, 0, beginOp + 1);
-                strncpy(inputNode->leftChild->contents, inputNode->contents, beginOp);
-                setBlankNode(inputNode->leftChild);
-                processString(inputNode->leftChild);
+                if (beginOp == 0) {
+                    if (inputNode->parent != NULL) {
+                        if (inputNode->parent->subtreeChild != NULL) {
+                            inputNode->leftChild = inputNode->parent->subtreeChild;
+                            inputNode->parent->subtreeChild = NULL;
+                        } else if (inputNode->parent->leftChild != NULL) {
+                            inputNode->leftChild = inputNode->parent->leftChild;
+                            inputNode->parent->leftChild = NULL;
+                        }
+                    }
+                } else {
+                    inputNode->leftChild = (treeNode *)malloc(sizeof(treeNode));
+                    inputNode->leftChild->parent = inputNode;
+                    inputNode->leftChild->contents = (char *)malloc(beginOp + 1);
+                    memset(inputNode->leftChild->contents, 0, beginOp + 1);
+                    strncpy(inputNode->leftChild->contents, inputNode->contents, beginOp);
+                    setBlankNode(inputNode->leftChild);
+                    processString(inputNode->leftChild);
+                }
 
-                inputNode->rightChild = (treeNode *)malloc(sizeof(treeNode));
-                inputNode->rightChild->contents = (char *)malloc(strlen(inputNode->contents) - endOp + 1);
-                memset(inputNode->rightChild->contents, 0, strlen(inputNode->contents) - endOp + 1);
-                strncpy(inputNode->rightChild->contents, &(inputNode->contents[endOp]), strlen(inputNode->contents) - endOp);
-                setBlankNode(inputNode->rightChild);
-                processString(inputNode->rightChild);
+                if (endOp == strlen(inputNode->contents)) {
+                    if (inputNode->parent != NULL) {
+                        if (inputNode->parent->subtreeChild != NULL) {
+                            inputNode->rightChild = inputNode->parent->subtreeChild;
+                            inputNode->parent->subtreeChild = NULL;
+                        } else if (inputNode->parent->rightChild != NULL) {
+                            inputNode->rightChild = inputNode->parent->rightChild;
+                            inputNode->parent->rightChild = NULL;
+                        }
+                    }
+                } else {
+                    inputNode->rightChild = (treeNode *)malloc(sizeof(treeNode));
+                    inputNode->rightChild->parent = inputNode;
+                    inputNode->rightChild->contents = (char *)malloc(strlen(inputNode->contents) - endOp + 1);
+                    memset(inputNode->rightChild->contents, 0, strlen(inputNode->contents) - endOp + 1);
+                    strncpy(inputNode->rightChild->contents, &(inputNode->contents[endOp]), strlen(inputNode->contents) - endOp);
+                    setBlankNode(inputNode->rightChild);
+                    processString(inputNode->rightChild);
+                }
 
                 break;
             } else if (i == NOT) {
                 inputNode->nodeType = i;
-
-                inputNode->rightChild = (treeNode *)malloc(sizeof(treeNode));
-                inputNode->rightChild->contents = (char *)malloc(beginOp);
-                strncpy(inputNode->rightChild->contents, inputNode->contents, beginOp);
-                processString(inputNode->rightChild);
-                setBlankNode(inputNode->rightChild);
+                if (endOp == strlen(inputNode->contents)) {
+                    treeNode *new = inputNode->parent;
+                    while (new != NULL) {
+                        if (new->nodeType != NOT) {
+                            if (new->parent != NULL) {
+                                if (new->parent->subtreeChild != NULL) {
+                                    inputNode->rightChild = new->parent->subtreeChild;
+                                    new->parent->subtreeChild = NULL;
+                                } else if (new->parent->rightChild != NULL) {
+                                    inputNode->rightChild = new->parent->rightChild;
+                                    new->parent->rightChild = NULL;
+                                }
+                            }
+                            break;
+                        }
+                        new = new->parent;
+                    }
+                } else {
+                    inputNode->rightChild = (treeNode *)malloc(sizeof(treeNode));
+                    inputNode->rightChild->parent = inputNode;
+                    inputNode->rightChild->contents = (char *)malloc(beginOp + 1);
+                    memset(inputNode->rightChild->contents, 0, beginOp + 1);
+                    strncpy(inputNode->rightChild->contents, inputNode->contents, beginOp);
+                    setBlankNode(inputNode->rightChild);
+                    processString(inputNode->rightChild);
+                }
 
                 break;
             }
@@ -116,12 +165,12 @@ void processString(treeNode *inputNode) {
     }
 }
 
-void printTree(treeNode *root) {
+void printTree(treeNode *root, char c) {
     if (root == NULL) {
         return;
     }
-    printf("'%s'\n", root->contents);
-    printTree(root->leftChild);
-    printTree(root->subtreeChild);
-    printTree(root->rightChild);
+    printf("%c '%s'\n", c, root->contents);
+    printTree(root->leftChild, 'l');
+    printTree(root->subtreeChild, 's');
+    printTree(root->rightChild, 'r');
 }

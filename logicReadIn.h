@@ -1,12 +1,4 @@
-enum operator{
-    NONE = -1,
-    SUBTREE,
-    NAND,
-    NOR,
-    XOR,
-    OR,
-    AND,
-    NOT};
+enum operator{ NONE = -1, SUBTREE, NAND, NOR, XOR, OR, AND, NOT };
 
 typedef struct treeNode {
     enum operator nodeType;
@@ -14,7 +6,8 @@ typedef struct treeNode {
     struct treeNode *leftChild;
     struct treeNode *subtreeChild;
     struct treeNode *rightChild;
+    struct treeNode *parent;
 } treeNode;
 
 treeNode *treeMake(char *);
-void printTree(treeNode *);
+void printTree(treeNode *, char);
