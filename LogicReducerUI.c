@@ -85,6 +85,7 @@ int main() {
    printf("Enter a logic equation: ");
    char equation[512];
    fgets(equation, 512, stdin);
+   equation[strlen(equation) - 1] = 0;
    treeNode *n = treeMake(equation);
    printTree(n);
    for (int inputIndex = 0; inputIndex < numIns; inputIndex++) {
