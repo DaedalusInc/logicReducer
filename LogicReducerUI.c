@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include "logicReadIn.h"
 
 void printInstructions() {
    printf("Instructions:\n1. Enter your input variables\n  - Variable names can not begin or end with parenthesis");
@@ -18,8 +19,8 @@ void printInstructions() {
 }
 
 bool validName(char* name) {
-   return name != "not" && name != "or" && name != "and" && name != "xor" && name != "nor"
-   && name != "nand" && name != "xnor" && name[0] != "(" && name[strlen(name)-1] != ")";
+   return strcmp(name, "not") && strcmp(name, "or") && strcmp(name, "and") && strcmp(name, "xor") && strcmp(name, "nor")
+   && strcmp(name, "nand") && strcmp(name, "xnor") && name[0] != '(' && name[strlen(name)-1] != ')';
 }
 
 int main() {
@@ -79,9 +80,13 @@ int main() {
          strcpy(functionNames[functionIndex], "F");
       }
    }
+   while (getchar() != '\n');
 
    printf("Enter a logic equation: ");
-
+   char equation[512];
+   fgets(equation, 512, stdin);
+   treeNode *n = treeMake(equation);
+   printTree(n);
    for (int inputIndex = 0; inputIndex < numIns; inputIndex++) {
       free(inputNames[inputIndex]);
    }
