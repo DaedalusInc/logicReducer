@@ -253,8 +253,18 @@ void printTree(treeNode *root, char c, int depth) {
     for (int i = 0; i < depth; i++) {
         printf("\t");
     }
-    printf("%c %d '%s'\n", c, root->side, root->contents);
+    printf("%c '%s'\n", c, root->contents);
     printTree(root->leftChild, 'l', depth + 1);
     printTree(root->subtreeChild, 's', depth + 1);
     printTree(root->rightChild, 'r', depth + 1);
+}
+
+void freeTree(treeNode *root) {
+    if (root == NULL) {
+        return;
+    }
+    freeTree(root->leftChild);
+    freeTree(root->rightChild);
+    freeTree(root->subtreeChild);
+    free(root);
 }

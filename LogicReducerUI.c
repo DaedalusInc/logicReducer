@@ -21,8 +21,8 @@ void printInstructions() {
 }
 
 bool validName(char* name) {
-   return strcmp(name, "not") && strcmp(name, "or") && strcmp(name, "and") && strcmp(name, "xor") && strcmp(name, "nor")
-   && strcmp(name, "nand") && strcmp(name, "xnor") && name[0] != '(' && name[strlen(name)-1] != ')';
+   return strcasecmp(name, "not") && strcasecmp(name, "or") && strcasecmp(name, "and") && strcasecmp(name, "xor") && strcasecmp(name, "nor")
+   && strcasecmp(name, "nand") && name[0] != '(' && name[strlen(name)-1] != ')';
 }
 
 int main() {
@@ -38,6 +38,7 @@ int main() {
       printf("You must enter an integer greater than 0.\nHow many input variables do you have? ");
       while (getchar() != '\n');
    }
+
    inputNames = malloc(sizeof(char*)*numIns);
    
    for (int inputIndex = 0; inputIndex < numIns; inputIndex++) {
@@ -93,6 +94,7 @@ int main() {
    printTree(n, 'k', 0);
    size_t num_minterms = 0;
    uint32_t *minterms = execTree(n, &num_minterms);
+   freeTree(n);
    size_t num_reduced = 0;
    term *reduced = reduce_minterms(minterms, num_minterms, &num_reduced);
    printf("Reduced equation:\n");

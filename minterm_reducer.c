@@ -102,7 +102,6 @@ bool merge_terms(term *a, term *b, term *primes, size_t cnt) {
 // This is based on the first part of the quine-mccluskey algorithm.
 term *get_primes(term *minterms, size_t len, size_t *outlen) {
     qsort(minterms, len, sizeof(term), cmp_ones_minterm);
-    printf("%zu\n", len);
     term *primes = malloc(sizeof(term) * len);
     size_t primeslen = len;
     memset(primes, 0, len * sizeof(term));
@@ -189,7 +188,6 @@ term *tablize(term *primes, size_t plen, term *minterms, size_t mlen, size_t *ou
 // Return the essential prime implicants from a list of minterms.
 // Minterms should be in basic numerical format, e.g. binary 1010 for minterm 10
 term *reduce_minterms(uint32_t *minterms, size_t len, size_t *retlen) {
-    printf("%zu\n", len);
     term *m = malloc(len * sizeof(term));
     memset(m, 0, len * sizeof(term));
     for (size_t i = 0; i < len; i++) {

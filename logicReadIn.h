@@ -18,6 +18,7 @@ typedef struct treeNode {
 
 treeNode *treeMake(char *);
 void printTree(treeNode *, char, int);
+void freeTree(treeNode *);
 
 extern char *variables[32];
 extern int num_vars;
