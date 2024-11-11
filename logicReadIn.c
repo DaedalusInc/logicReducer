@@ -6,11 +6,11 @@
   Code is not yet tested, there are a few spots where I am pretty certain there are errors.*/
 
 #include "logicReadIn.h"
-#include <ctype.h>
 #include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _GNU_SOURCE
 #include <string.h>
 #define OPCOUNT 7
 
@@ -25,9 +25,9 @@ void setBlankNode(treeNode *inputNode) {
 
 treeNode *treeMake(char *inputString) {
     // strupr function is only available in some ancient microsoft C version
-    for (int i = 0; i < strlen(inputString); i++) {
+    /*for (int i = 0; i < strlen(inputString); i++) {
         inputString[i] = toupper(inputString[i]);
-    }
+    }*/
     treeNode *rootNode = malloc(sizeof(treeNode));
     rootNode->nodeType = SUBTREE;
     rootNode->contents = inputString;
@@ -52,7 +52,7 @@ void processString(treeNode *inputNode) {
 
     // printf("Starting process of '%s'\n", inputNode->contents);
     for (i = 0; i < OPCOUNT; ++i) {
-        opPtr = strstr(inputNode->contents, operators[i]);
+        opPtr = strcasestr(inputNode->contents, operators[i]);
 
         if (opPtr != NULL) {
             found = true;
@@ -216,16 +216,14 @@ void processString(treeNode *inputNode) {
     }
     if (!found) {
         if (strlen(inputNode->contents) != 0) {
+            printf("%s\n", inputNode->contents);
             for (int i = 0; i < 32; i++) {
                 if (variables[i] != NULL) {
-                    if (!strcmp(variables[i], inputNode->contents)) {
+                    if (!strcasecmp(variables[i], inputNode->contents)) {
                         inputNode->variable = i;
                         break;
                     }
                 } else {
-                    variables[i] = strdup(inputNode->contents);
-                    inputNode->variable = i;
-                    num_vars += 1;
                     break;
                 }
             }
