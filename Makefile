@@ -1,11 +1,11 @@
-SRC := LogicReducerUI.c logicReadIn.c minterm_reducer.c
+SRC := LogicReducerUI.c logicReadIn.c minterm_reducer.c exec.c
 OBJ := $(SRC:.c=.o)
 
 %.o: %.c
-	$(CC) -c '$^' -o $@
+	$(CC) -g -c '$^' -o $@
 
 logicReducer: $(OBJ)
-	$(CC) $^ -o $@
+	$(CC) -g $^ -o $@
 
 .PHONY: clean
 
