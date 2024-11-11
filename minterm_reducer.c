@@ -1,16 +1,11 @@
+#include "minterm_reducer.h"
+#include "logicReadIn.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 // Implementation of the Quine-McCluskey boolean simplification algorithm
-
-// a minterm/prime implicant
-// val is the raw value and mask is 1 in every "combined" position
-typedef struct term {
-    uint32_t val;
-    uint32_t mask;
-} term;
 
 #define BINFMT "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define BINIZEU32(n)                                                                                                                                           \
@@ -107,7 +102,9 @@ bool merge_terms(term *a, term *b, term *primes, size_t cnt) {
 // This is based on the first part of the quine-mccluskey algorithm.
 term *get_primes(term *minterms, size_t len, size_t *outlen) {
     qsort(minterms, len, sizeof(term), cmp_ones_minterm);
+    printf("%zu\n", len);
     term *primes = malloc(sizeof(term) * len);
+    size_t primeslen = len;
     memset(primes, 0, len * sizeof(term));
     bool *merges = malloc(sizeof(bool) * len);
     memset(merges, 0, len * sizeof(bool));
@@ -121,6 +118,10 @@ term *get_primes(term *minterms, size_t len, size_t *outlen) {
         for (size_t c = i + 1; c < len; c++) {
             if (check_term_diff(&minterms[i], &minterms[c])) {
                 merges[i] = merges[c] = true;
+                if (num_merges >= primeslen) {
+                    primeslen *= 2;
+                    primes = realloc(primes, primeslen * sizeof(term));
+                }
                 if (merge_terms(&minterms[i], &minterms[c], primes, num_merges)) {
                     num_merges++;
                 }
@@ -130,6 +131,10 @@ term *get_primes(term *minterms, size_t len, size_t *outlen) {
     size_t newidx = num_merges;
     for (size_t i = 0; i < len; i++) {
         if (!merges[i] && !term_in_arr(&minterms[i], primes, newidx)) {
+            if (newidx >= primeslen) {
+                primeslen *= 2;
+                primes = realloc(primes, primeslen * sizeof(term));
+            }
             primes[newidx] = minterms[i];
             newidx += 1;
         }
@@ -153,7 +158,7 @@ term *get_primes(term *minterms, size_t len, size_t *outlen) {
 }
 
 // Create the prime implicant table and determine the essential prime implicants.
-uint32_t *tablize(term *primes, size_t plen, term *minterms, size_t mlen, size_t *outlen) {
+term *tablize(term *primes, size_t plen, term *minterms, size_t mlen, size_t *outlen) {
     uint32_t *vals = malloc(plen * sizeof(uint32_t));
     memset(vals, 0, plen * sizeof(uint32_t));
     for (size_t i = 0; i < plen; i++) {
@@ -166,13 +171,13 @@ uint32_t *tablize(term *primes, size_t plen, term *minterms, size_t mlen, size_t
             }
         }
     }
-    uint32_t *outputs = malloc(plen * sizeof(uint32_t));
-    memset(outputs, 0, plen * sizeof(uint32_t));
+    term *outputs = malloc(plen * sizeof(term));
+    memset(outputs, 0, plen * sizeof(term));
     size_t j = 0;
     // any prime implicants that match 1 minterm are essential
     for (size_t i = 0; i < plen; i++) {
         if (vals[i] == 1) {
-            outputs[j] = primes[i].val;
+            outputs[j] = primes[i];
             j++;
         }
     }
@@ -183,20 +188,43 @@ uint32_t *tablize(term *primes, size_t plen, term *minterms, size_t mlen, size_t
 
 // Return the essential prime implicants from a list of minterms.
 // Minterms should be in basic numerical format, e.g. binary 1010 for minterm 10
-uint32_t *reduce_minterms(uint32_t *minterms, size_t len) {
+term *reduce_minterms(uint32_t *minterms, size_t len, size_t *retlen) {
+    printf("%zu\n", len);
     term *m = malloc(len * sizeof(term));
     memset(m, 0, len * sizeof(term));
     for (size_t i = 0; i < len; i++) {
         m[i].val = minterms[i];
     }
     size_t outlen = 0;
-    term *primes = get_primes(m, 5, &outlen);
+    term *primes = get_primes(m, len, &outlen);
     size_t esslen = 0;
-    uint32_t *ess = tablize(primes, outlen, m, 5, &esslen);
-    puts("Final outputs:");
+    term *ess = tablize(primes, outlen, m, len, &esslen);
+    /*puts("Final outputs:");
     for (size_t i = 0; i < esslen; i++) {
-        printf(BINFMT "\n", BINIZEU32(ess[i]));
-    }
+        printf("v" BINFMT "\n", BINIZEU32(ess[i].val));
+        printf("m" BINFMT "\n", BINIZEU32(ess[i].mask));
+    }*/
+    *retlen = esslen;
     return ess;
 }
 
+// O(n^2)
+char *minterms_to_equation(term *terms, size_t len) {
+    char *output = malloc(1000);
+    memset(output, 0, 1000);
+    char *ptr = output;
+    ptr[0] = '(';
+    ptr++;
+    for (size_t i = 0; i < len; i++) {
+        for (int j = 0; j < num_vars; j++) {
+            if (!(terms[i].mask & (1 << j))) {
+                ptr += sprintf(ptr, "%s%s AND ", terms[i].val & (1 << j) ? "" : "NOT ", variables[j]);
+            }
+        }
+        ptr -= 5;
+        ptr += sprintf(ptr, ") OR (");
+    }
+    ptr -= 6;
+    ptr[1] = 0;
+    return output;
+}

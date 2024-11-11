@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include "logicReadIn.h"
+#include "exec.h"
+#include "minterm_reducer.h"
 
 void printInstructions() {
    printf("Instructions:\n1. Enter your input variables\n  - Variable names can not begin or end with parenthesis");
@@ -87,7 +89,14 @@ int main() {
    fgets(equation, 512, stdin);
    equation[strlen(equation) - 1] = 0;
    treeNode *n = treeMake(equation);
-   printTree(n, 'k');
+   printf("Parsed equation tree:\n");
+   printTree(n, 'k', 0);
+   size_t num_minterms = 0;
+   uint32_t *minterms = execTree(n, &num_minterms);
+   size_t num_reduced = 0;
+   term *reduced = reduce_minterms(minterms, num_minterms, &num_reduced);
+   printf("Reduced equation:\n");
+   printf("%s\n", minterms_to_equation(reduced, num_reduced));
    for (int inputIndex = 0; inputIndex < numIns; inputIndex++) {
       free(inputNames[inputIndex]);
    }
