@@ -41,7 +41,7 @@ int num_vars = 0;
 
 void processString(treeNode *inputNode) {
     regex_t reegex;
-    regcomp(&reegex, "\\(.*+\\)", REG_EXTENDED);
+    regcomp(&reegex, "\\(.*\\)", REG_EXTENDED);
     regmatch_t matchList;
     char *opPtr;
     bool found = false;

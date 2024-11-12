@@ -71,12 +71,11 @@ bool term_in_arr(term *a, term *arr, size_t len) {
 bool merge_terms(term *a, term *b, term *primes, size_t cnt) {
     // assume the masks should be equal
     term out = {.mask = a->mask};
-    /*    printf("Merging:\n");
-        printf("v" BINFMT "\n", BINIZEU32(a->val));
-        printf("v" BINFMT "\n", BINIZEU32(b->val));
-        printf("m" BINFMT "\n", BINIZEU32(a->mask));
-        printf("m" BINFMT "\n", BINIZEU32(b->mask));
-    */
+    /*printf("Merging:\n");
+    printf("v" BINFMT "\n", BINIZEU32(a->val));
+    printf("v" BINFMT "\n", BINIZEU32(b->val));
+    printf("m" BINFMT "\n", BINIZEU32(a->mask));
+    printf("m" BINFMT "\n", BINIZEU32(b->mask));*/
     for (size_t i = 0; i < 32; i++) {
         if ((a->val & (1 << i)) == (b->val & (1 << i))) {
             // printf(" s,");
@@ -90,10 +89,10 @@ bool merge_terms(term *a, term *b, term *primes, size_t cnt) {
         return false;
         // puts("");
     }
-    // printf("\nGot:\n");
-    // printf("v" BINFMT "\n", BINIZEU32(out.val));
-    // printf("m" BINFMT "\n", BINIZEU32(out.mask));
-    // puts("");
+    /*printf("\nGot:\n");
+    printf("v" BINFMT "\n", BINIZEU32(out.val));
+    printf("m" BINFMT "\n", BINIZEU32(out.mask));
+    puts("");*/
     primes[cnt] = out;
     return true;
 }
@@ -197,6 +196,8 @@ term *reduce_minterms(uint32_t *minterms, size_t len, size_t *retlen) {
     term *primes = get_primes(m, len, &outlen);
     size_t esslen = 0;
     term *ess = tablize(primes, outlen, m, len, &esslen);
+    free(primes);
+    free(m);
     /*puts("Final outputs:");
     for (size_t i = 0; i < esslen; i++) {
         printf("v" BINFMT "\n", BINIZEU32(ess[i].val));
@@ -213,16 +214,26 @@ char *minterms_to_equation(term *terms, size_t len) {
     char *ptr = output;
     ptr[0] = '(';
     ptr++;
+    size_t any = 0;
     for (size_t i = 0; i < len; i++) {
         for (int j = 0; j < num_vars; j++) {
             if (!(terms[i].mask & (1 << j))) {
                 ptr += sprintf(ptr, "%s%s AND ", terms[i].val & (1 << j) ? "" : "NOT ", variables[j]);
+                any += 1;
             }
         }
-        ptr -= 5;
-        ptr += sprintf(ptr, ") OR (");
+        if (ptr - output >= 5) {
+            ptr -= 5;
+            ptr += sprintf(ptr, ") OR (");
+        }
     }
-    ptr -= 6;
+    if (ptr - output >= 6) {
+        ptr -= 6;
+    } else if (any == 0) {
+        output[0] = '1';
+        output[1] = 0;
+        return output;
+    }
     ptr[1] = 0;
     return output;
 }

@@ -67,13 +67,22 @@ int main() {
         treeNode *n = treeMake(equation);
         printf("Parsed equation tree:\n");
         printTree(n, 'k', 0);
+        printf("%d", n->nodeType);
         size_t num_minterms = 0;
         uint32_t *minterms = execTree(n, &num_minterms);
+        if (num_minterms == 0) {
+            printf("Reduced equation:\n0\n");
+        } else {
+            size_t num_reduced = 0;
+            term *reduced = reduce_minterms(minterms, num_minterms, &num_reduced);
+            printf("Reduced equation:\n");
+            char *eqn = minterms_to_equation(reduced, num_reduced);
+            printf("%s\n", eqn);
+            free(eqn);
+            free(reduced);
+        }
         freeTree(n);
-        size_t num_reduced = 0;
-        term *reduced = reduce_minterms(minterms, num_minterms, &num_reduced);
-        printf("Reduced equation:\n");
-        printf("%s\n", minterms_to_equation(reduced, num_reduced));
+        free(minterms);
     }
     for (int inputIndex = 0; inputIndex < numIns; inputIndex++) {
         free(variables[inputIndex]);
