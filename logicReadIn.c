@@ -221,6 +221,7 @@ void processString(treeNode *inputNode) {
                 if (variables[i] != NULL) {
                     if (!strcasecmp(variables[i], inputNode->contents)) {
                         inputNode->variable = i;
+                        inputNode->nodeType = NONE;
                         break;
                     }
                 } else {

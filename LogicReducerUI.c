@@ -67,7 +67,6 @@ int main() {
         treeNode *n = treeMake(equation);
         printf("Parsed equation tree:\n");
         printTree(n, 'k', 0);
-        printf("%d", n->nodeType);
         size_t num_minterms = 0;
         uint32_t *minterms = execTree(n, &num_minterms);
         if (num_minterms == 0) {
