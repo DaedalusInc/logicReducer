@@ -67,7 +67,8 @@ void processString(treeNode *inputNode) {
                     // printf("Regex matched\n");
                     inputNode->subtreeChild = (treeNode *)malloc(sizeof(treeNode));
                     inputNode->subtreeChild->parent = inputNode;
-                    inputNode->subtreeChild->contents = (char *)malloc(matchList.rm_eo - matchList.rm_so);
+                    inputNode->subtreeChild->contents = (char *)malloc(matchList.rm_eo - matchList.rm_so + 1);
+                    memset(inputNode->subtreeChild->contents, 0, matchList.rm_eo - matchList.rm_so + 1);
                     inputNode->subtreeChild->side = SUB;
                     strncpy(inputNode->subtreeChild->contents, &inputNode->contents[matchList.rm_so + 1], matchList.rm_eo - matchList.rm_so - 2);
                     setBlankNode(inputNode->subtreeChild);
