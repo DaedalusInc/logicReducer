@@ -7,16 +7,13 @@
 #include <string.h>
 
 void printInstructions() {
-    printf("Instructions:\n1. Enter your input variables\n  - Variable names can not begin or end with parenthesis");
+    printf("Instructions:\n1. Enter your input variables\n  - Variable names can not begin or end with parentheses");
     printf("\n  - Variable names can not be boolean operators\n2. Enter the number of function you have");
     printf("\n  - Optional naming, defaults to F1, F2, ... Fn\n3. Select your input method");
-    printf("\n3a. Enter a boolean equation using the input variables entered, for each function");
-    printf("\n  - Allowed operators: not, or, and, xor, nor, nand, and parenthesis");
-    printf("\n  - Separate all input variable names and operators with a space (exept parenthesis)");
-    printf("\n  - There must be a space between parenthesis and operators, but it's not required for variables");
+    printf("\n3 - Enter a boolean equation using the input variables entered, for each function");
+    printf("\n  - Allowed operators: not, or, and, xor, nor, nand, and parentheses");
+    printf("\n  - Separate all input variable names and operators with a space (except parentheses)");
     printf("\n  - Order of operations: (), not, and, or, xor, nor, nand");
-    printf("\n3b. Enter the minterm values of the function\n3c. Enter the maxterm values of the function");
-    printf("\n  - The first input variable is the most significant bit and the last is the least significant bit");
     printf("\n  - Enter a list of integers, for the terms, seperated by non-number characters\n\n");
 }
 
